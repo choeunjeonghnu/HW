@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>감정표정 테스트</title>
+  </head>
+  <body>
+    <h1>현재 감정 : <span id="emotion">Loading...</span></h1>
+
+    <!-- 비디오 태그 : 여기서 크기, 반복, 컨트롤, 음소거 등을 설정 가능 -->
+    <video id="video" width="640" height="480" muted loop>
+      <source id="videoSource" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <button onclick="getEmotion()">새 감정 불러오기</button>
+
+    <script>
+      function getEmotion() {
+        fetch("/get_emotion") // 서버로부터 감정 데이터를 비동기 요청
+          .then((response) => response.json())
+          .then((data) => {
+            // data는 {"emotion" : emotion} 형태의 json
+            // 해당 emotion을 h1 태그 innerText
+            const emotion = data.emotion;
+            document.getElementById("emotion").innerText = emotion;
+
+            // 동영상 경로를 서버로부터 가져옴
+            const videoSource = document.getElementById("videoSource");
+            videoSource.src = `/get_video/${emotion}`;
+
+            // 동영상을 새로고침하여 재생 (버튼 클릭 시 실행되는 함수)
+            const videoElement = document.getElementById("video");
+            videoElement.load();
+            videoElement.play();
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // 처음 페이지 로드 시 바로 감정 가져오도록 함수 실행
+      window.onload = getEmotion;
+    </script>
+  </body>
+</html>
