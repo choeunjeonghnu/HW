@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import atexit
 
 IN1 = 17
 IN2 = 18
@@ -23,3 +24,9 @@ def motor_control(on: bool):
         GPIO.output(IN2, GPIO.LOW)
         pwm.ChangeDutyCycle(0)
         print("모터 OFF")
+
+def cleanup_gpio():
+    pwm.stop()
+    GPIO.cleanup()
+
+atexit.register(cleanup_gpio)
