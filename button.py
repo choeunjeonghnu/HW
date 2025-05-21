@@ -1,10 +1,11 @@
 from evdev import InputDevice, ecodes
+import time
 import select
 import sys
-from motor import motor_control
+from motor_en import motor_control
 
 # 블루투스 버튼 디바이스 경로
-DEVICE_PATH = "/dev/input/event3"
+DEVICE_PATH = "/dev/input/event2"
 
 # 장치 열기
 try:
@@ -16,6 +17,8 @@ except FileNotFoundError:
 
 # False = 대기 상태, True = 음성 듣기 중
 state = False 
+last_event_time = 0
+delay = 0.5  # 0.5초 내 중복 입력 무시
 
 while True:
     # 버튼 이벤트가 들어올 때까지 대기
@@ -29,13 +32,19 @@ while True:
             sys.exit(1)
 
         if event and event.type == ecodes.EV_KEY and event.code == ecodes.KEY_VOLUMEUP and event.value == 1:
-            if not state:
-                state = True
+            now = time.time()
+            if now - last_event_time < delay:
+                continue
+            last_event_time = now
+            state = not state
+
+            if state:
                 motor_control(True)
                 #음성 듣는 함수 불러오기
+                print("음성 듣는 중")
 
             else:
-                state = False
                 motor_control(False)
                 #음성 듣기 중지 + 음성->텍스트 변환 함수 불러오기
+                print("음성 듣기 중지")
 
